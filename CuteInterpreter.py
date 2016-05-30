@@ -584,7 +584,13 @@ def Test_method(input):
     print print_node(result)
 
 def Test_All():
-    Test_method("( - 1 2 )")
+    while(True):
+        name = raw_input('> ')
+        print "... ",
+        Test_method(name)
+
+
+    """###Test_method("( - 1 2 )")
     Test_method("( - ( + 1 2 ) 4 )")
     Test_method("( + 1 2 )")
     Test_method("( > 1 2 )")
@@ -593,6 +599,6 @@ def Test_All():
     Test_method("( / 2 2 )")
     Test_method("( not #T )")
     Test_method("( cond ( ( > 2 1 ) 0 ) ( #T 1 ) )")
-    Test_method("( cond ( ( null? ' ( 1 2 3 ) ) 1 ) ( ( > 100 10 ) 2 ) ( #T 3 ) )")
+    Test_method("( cond ( ( null? ' ( 1 2 3 ) ) 1 ) ( ( > 100 10 ) 2 ) ( #T 3 ) )")"""
 
 Test_All()
