@@ -122,8 +122,10 @@ class CuteScanner(object):
         :param source:
         :return:
         """
+        source = source.replace('(','( ')
+        source = source.replace(')',' )')
         source=source.strip()
-        token_list=source.split(" ")
+        token_list=source.split()
         self.token_iter=iter(token_list)
 
 
@@ -317,6 +319,7 @@ class CuteInterpreter(object):
 
     TRUE_NODE = Node(TokenType.TRUE)
     FALSE_NODE = Node(TokenType.FALSE)
+    tablevalue = dict()
 
     def run_arith(self, arith_node):
         pass
@@ -324,6 +327,14 @@ class CuteInterpreter(object):
     def run_func(self, func_node):
         rhs1 = func_node.next
         rhs2 = rhs1.next if rhs1.next is not None else None
+
+
+
+        if(rhs1 is not None and self.lookupTable(rhs1.value)):
+            rhs1 = self.tablevalue.get(rhs1.value)
+        if(rhs2 is not None and self.lookupTable(rhs2.value)):
+            rhs2 = self.tablevalue.get(rhs2.value)
+
 
         def create_quote_node(node, list_flag = False):
             """
@@ -355,6 +366,14 @@ class CuteInterpreter(object):
                 return node
             return node.value.next.value
 
+        def insertTable(id, value):
+            self.tablevalue[id] = value
+            """tablevalue2 = {id:value}
+            self.tablevalue[id] = value"""
+
+
+
+
         def list_is_null(node):
             "입력받은 node가 null list인지 확인함"
             node = pop_node_from_quote_list(node)
@@ -365,6 +384,8 @@ class CuteInterpreter(object):
             rhs1 = self.run_expr(rhs1).value
             rhs2 = self.run_expr(rhs2)
             insertTable(rhs1, rhs2)
+
+
 
         if func_node.type is TokenType.CAR:
             rhs1 = self.run_expr(rhs1)
@@ -429,15 +450,30 @@ class CuteInterpreter(object):
         elif func_node.type is TokenType.COND:
             while(rhs1 is not None):
                 if(self.run_expr(rhs1.value).type is TokenType.TRUE):
+                    if(rhs1 is not None and self.lookupTable(rhs1.value)):
+                         rhs1 = self.tablevalue.get(rhs1.value)
                     return rhs1.value.next
+
                 rhs1 = rhs1.next
         else:
             return None
+
+    def lookupTable(self,id):
+            if(self.tablevalue.has_key(id)):
+                return True;
+            else:
+                return False;
+
     def run_binary(self, func_node):
         rhs1 = func_node.next
         rhs2 = rhs1.next if rhs1.next is not None else None
         expr_rhs1 = self.run_expr(rhs1)
         expr_rhs2 = self.run_expr(rhs2)
+
+        if(self.lookupTable(expr_rhs1.value)):
+            expr_rhs1 = self.tablevalue.get(expr_rhs1.value)
+        if(self.lookupTable(expr_rhs2.value)):
+            expr_rhs2 = self.tablevalue.get(expr_rhs2.value)
 
         if(func_node.type is TokenType.PLUS):
             return Node(TokenType.INT, int(expr_rhs1.value)+int(expr_rhs2.value))
@@ -497,7 +533,7 @@ class CuteInterpreter(object):
             return l_node
         if op_code.type in \
                 [TokenType.CAR, TokenType.CDR, TokenType.CONS, TokenType.ATOM_Q,\
-                 TokenType.EQ_Q, TokenType.NULL_Q, TokenType.NOT, TokenType.COND]:
+                 TokenType.EQ_Q, TokenType.NULL_Q, TokenType.NOT, TokenType.COND, TokenType.DEFINE]:
             return self.run_func(op_code)
         if op_code.type in \
                 [TokenType.PLUS, TokenType.MINUS, TokenType.LT, TokenType.GT, TokenType.EQ, TokenType.TIMES, TokenType.DIV]:
@@ -594,8 +630,7 @@ def Test_All():
         print "... ",
         Test_method(name)
 
-
-    """###Test_method("( - 1 2 )")
+    """Test_method("( - 1 2 )")
     Test_method("( - ( + 1 2 ) 4 )")
     Test_method("( + 1 2 )")
     Test_method("( > 1 2 )")
@@ -603,7 +638,7 @@ def Test_All():
     Test_method("( * 1 2 )")
     Test_method("( / 2 2 )")
     Test_method("( not #T )")
-    Test_method("( cond ( ( > 2 1 ) 0 ) ( #T 1 ) )")
+    Test_method("( cond ( ( > 1 2 ) 0 ) ( #T 1 ) )")
     Test_method("( cond ( ( null? ' ( 1 2 3 ) ) 1 ) ( ( > 100 10 ) 2 ) ( #T 3 ) )")"""
 
 Test_All()
